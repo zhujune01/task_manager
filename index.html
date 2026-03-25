@@ -559,9 +559,17 @@
   }
 
   // ── Storage & migration ───────────────────────────────────────────────────
+  const SEED_TASKS = [{"id":"mn5k0ep22qqcf5zdlg4","title":"Eric's audition registration","notes":"","priority":"low","dueDate":"2026-04-03","tags":["family"],"kanbanStatus":"todo","createdAt":"2026-03-25T04:39:06.086Z"},{"id":"mn5jzgbks6l1fcjdg8","title":"draft the plan to reduct loss","notes":"","priority":"high","dueDate":"2026-03-27","tags":["project"],"kanbanStatus":"todo","createdAt":"2026-03-25T04:38:21.536Z"},{"id":"mn5jyk8y6zpys27cukn","title":"email to ask approval for L4/L5 backfill","notes":"","priority":"medium","dueDate":"2026-03-26","tags":["people"],"kanbanStatus":"todo","createdAt":"2026-03-25T04:37:39.970Z"},{"id":"mn5jxtuh2e746fw1flp","title":"L5 hiring/interview","notes":"","priority":"medium","dueDate":"2026-04-24","tags":["people"],"kanbanStatus":"todo","createdAt":"2026-03-25T04:37:05.753Z"},{"id":"mn5jx16jpsogjgrjzz","title":"address loss forecasting question","notes":"","priority":"high","dueDate":"2026-03-25","tags":["project"],"kanbanStatus":"todo","createdAt":"2026-03-25T04:36:28.603Z"}];
+
   function loadTasks() {
     try {
-      const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw === null) {
+        // First visit — seed with default tasks
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_TASKS));
+        return SEED_TASKS;
+      }
+      const tasks = JSON.parse(raw) || [];
       // Migrate: done boolean → kanbanStatus
       tasks.forEach(t => {
         if (!t.kanbanStatus) t.kanbanStatus = t.done ? 'done' : 'todo';
