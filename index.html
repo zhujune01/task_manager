@@ -143,24 +143,6 @@
     .tag-suggestion-item:hover { background: var(--bg); }
     .tag-suggestion-item.new-tag { color: var(--accent); }
 
-    /* ── Lock button ── */
-    .lock-btn {
-      border: 1px solid var(--border); background: var(--surface);
-      border-radius: 8px; padding: 6px 10px; font-size: 16px;
-      cursor: pointer; line-height: 1; transition: background 0.15s;
-    }
-    .lock-btn:hover { background: var(--bg); }
-
-    /* ── Read-only mode ── */
-    body:not([data-owner]) #toggle-form { display: none !important; }
-    body:not([data-owner]) .task-delete { display: none !important; }
-    body:not([data-owner]) .k-delete { display: none !important; }
-    body:not([data-owner]) .drag-handle { display: none !important; }
-    body:not([data-owner]) .add-tag-btn { display: none !important; }
-    body:not([data-owner]) .priority-badge { pointer-events: none; cursor: default; }
-    body:not([data-owner]) .due-date { pointer-events: none; cursor: default; }
-    body:not([data-owner]) .task-check { pointer-events: none; }
-
     /* ── Dark mode toggle ── */
     .theme-btn {
       border: 1px solid var(--border); background: var(--surface);
@@ -441,7 +423,6 @@
   <header>
     <h1>Tasks</h1>
     <div class="header-right">
-      <button class="lock-btn" id="lock-btn" title="Unlock editing">🔒</button>
       <button class="theme-btn" id="theme-btn" title="Toggle dark mode">🌙</button>
       <div class="view-toggle">
         <button class="view-btn active" data-view="list">≡ List</button>
@@ -558,27 +539,11 @@
 
 <script>
   const STORAGE_KEY = 'taskmanager_tasks';
-  const OWNER_PWD = 'task$edit66';
   let activeFilter = 'all';
   let activeTagFilter = null;
   let activeView = 'list';
   let searchQuery = '';
   let activeWeekFilters = new Set();
-  let isOwner = false;
-
-  function setOwner(val) {
-    isOwner = val;
-    if (val) {
-      document.body.setAttribute('data-owner', '');
-      document.getElementById('lock-btn').textContent = '🔓';
-      document.getElementById('lock-btn').title = 'Lock editing';
-    } else {
-      document.body.removeAttribute('data-owner');
-      document.getElementById('lock-btn').textContent = '🔒';
-      document.getElementById('lock-btn').title = 'Unlock editing';
-    }
-    render();
-  }
 
   const PRIORITY_ORDER  = { high: 0, medium: 1, low: 2, none: 3 };
   const PRIORITY_LABELS = { high: '🔴 High', medium: '🟠 Medium', low: '🟢 Low', none: '· None' };
@@ -784,8 +749,8 @@
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       <input type="checkbox" class="task-check" ${isDone(task) ? 'checked' : ''}>
       <div class="task-body">
-        <div class="task-title" contenteditable="${isOwner}" spellcheck="false">${escHtml(task.title)}</div>
-        <div class="task-notes" contenteditable="${isOwner}" spellcheck="false">${escHtml(task.notes || '')}</div>
+        <div class="task-title" contenteditable="true" spellcheck="false">${escHtml(task.title)}</div>
+        <div class="task-notes" contenteditable="true" spellcheck="false">${escHtml(task.notes || '')}</div>
         <div class="task-meta">
           <button class="priority-badge ${p}" data-action="cycle-priority">${PRIORITY_LABELS[p]}</button>
           ${duePart}
@@ -885,7 +850,7 @@
     const tagPills = (task.tags || []).map(t => tagPillHTML(t)).join('');
 
     card.innerHTML = `
-      <div class="k-title" contenteditable="${isOwner}" spellcheck="false">${escHtml(task.title)}</div>
+      <div class="k-title" contenteditable="true" spellcheck="false">${escHtml(task.title)}</div>
       <div class="k-meta">
         <button class="priority-badge ${p}" data-action="cycle-priority" style="font-size:10px;padding:1px 7px">${PRIORITY_LABELS[p]}</button>
         ${duePart}
@@ -1234,19 +1199,6 @@
     if (e.key === 'Escape') resetForm();
   });
 
-  // ── Lock / unlock ─────────────────────────────────────────────────────────
-  document.getElementById('lock-btn').addEventListener('click', () => {
-    if (isOwner) {
-      setOwner(false);
-    } else {
-      const pwd = prompt('Enter password to unlock editing:');
-      if (pwd === OWNER_PWD) {
-        setOwner(true);
-      } else if (pwd !== null) {
-        alert('Incorrect password.');
-      }
-    }
-  });
 
   // ── Dark mode ─────────────────────────────────────────────────────────────
   const THEME_KEY = 'taskmanager_theme';
